@@ -121,8 +121,26 @@ jobs:
           name: vscode-extension-${{ matrix.target }}
           path: vscode-extension/*.vsix
 
+  lint-github-actions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Lint GitHub actions with Zizmor
+        uses: zizmorcore/zizmor-action@53290badfa369cb0bf7ad16342cb62c2fa47ac7b # v0.8.0
+        with:
+          advanced-security: false
+
   merge-gate:
     name: Merge Gate
     runs-on: ubuntu-slim
+    needs:
+      - server
+      - plugin
+      - vscode-extension
+      - lint-github-actions
     steps:
       - run: echo "Success"
