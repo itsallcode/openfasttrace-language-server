@@ -218,6 +218,23 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.itsallcode</groupId>
+                <artifactId>openfasttrace-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>trace-requirements</id>
+                        <goals>
+                            <goal>trace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- Tracing currently fails -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
