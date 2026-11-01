@@ -3,4 +3,5 @@ rules:
     config:
       policies:
         "actions/*": ref-pin
+        "gradle/actions/setup-gradle": ref-pin
         "*": hash-pin
