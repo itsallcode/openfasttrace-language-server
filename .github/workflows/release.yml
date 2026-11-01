@@ -3,9 +3,6 @@ name: Release
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
@@ -14,6 +11,8 @@ jobs:
   vscode-packages:
     name: Build VS Code extension (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: true
       matrix:
@@ -31,13 +30,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Fail if not running on main branch
         if: ${{ github.ref != 'refs/heads/main' }}
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            core.setFailed('This workflow must run on main. Current ref: ${{ github.ref }}')
+        run: |
+          echo This workflow must run on main. Current ref: $GITHUB_REF
+          exit 1
+        env:
+          GITHUB_REF: ${{ github.ref }}
 
       - name: Set up JDK 17 for Maven
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
@@ -70,6 +72,8 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: vscode-packages
+    permissions:
+      contents: write
     defaults:
       run:
         shell: bash
@@ -79,13 +83,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Fail if not running on main branch
         if: ${{ github.ref != 'refs/heads/main' }}
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            core.setFailed('This workflow must run on main. Current ref: ${{ github.ref }}')
+        run: |
+          echo This workflow must run on main. Current ref: $GITHUB_REF
+          exit 1
+        env:
+          GITHUB_REF: ${{ github.ref }}
 
       - name: Set up JDK 17 for Maven
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
@@ -102,7 +109,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build plugin distribution
         working-directory: intellij-plugin
@@ -134,5 +143,4 @@ jobs:
             echo "Publishing $package"
             npx --yes ovsx publish "$package"
           done
-
 
